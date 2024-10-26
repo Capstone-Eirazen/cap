@@ -15,13 +15,13 @@
 
               <div class="info-box-content">
                 <span class="info-box-text">Total Categories</span>
-                <span class="info-box-number">
+                <!-- <span class="info-box-number">
                   <?php 
                     $inv = $conn->query("SELECT count(id) as total FROM category_list where delete_flag = 0 ")->fetch_assoc()['total'];
                     echo number_format($inv);
                   ?>
                   <?php ?>
-                </span>
+                </span> -->
               </div>
               <!-- /.info-box-content -->
             </div>
@@ -35,11 +35,11 @@
               <div class="info-box-content">
                 <span class="info-box-text">Total Facilities</span>
                 <span class="info-box-number">
-                  <?php 
+                  <!-- <?php 
                     $inv = $conn->query("SELECT count(id) as total FROM facility_list where delete_flag = 0 ")->fetch_assoc()['total'];
                     echo number_format($inv);
                   ?>
-                  <?php ?>
+                  <?php ?> -->
                 </span>
               </div>
               <!-- /.info-box-content -->
@@ -55,7 +55,7 @@
                 <span class="info-box-text">Registered Clients</span>
                 <span class="info-box-number">
                   <?php 
-                    $mechanics = $conn->query("SELECT sum(id) as total FROM `client_list` where delete_flag = 0 ")->fetch_assoc()['total'];
+                    $mechanics = $conn->query("SELECT COUNT(id) as total FROM `client_list` WHERE delete_flag = 0 ")->fetch_assoc()['total'];
                     echo number_format($mechanics);
                   ?>
                 </span>
@@ -76,10 +76,10 @@
               <div class="info-box-content">
                 <span class="info-box-text">Pending Bookings</span>
                 <span class="info-box-number">
-                <?php 
+                <!-- <?php 
                     $services = $conn->query("SELECT sum(id) as total FROM `booking_list` where status = 0 ")->fetch_assoc()['total'];
                     echo number_format($services);
-                  ?>
+                  ?> -->
                 </span>
               </div>
               <!-- /.info-box-content -->
