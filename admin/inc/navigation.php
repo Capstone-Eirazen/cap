@@ -47,6 +47,7 @@
                         </p>
                       </a>
                     </li>
+                    
                     <!-- <li class="nav-item dropdown">
                       <a href="<?php echo base_url ?>admin/?page=bookings" class="nav-link nav-bookings">
                         <i class="nav-icon fas fa-tasks"></i>
