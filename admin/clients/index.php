@@ -26,7 +26,7 @@
 						<th>Name</th>
 						<th>Contact</th>
 						<th>Status</th>
-						<!-- <th>Action</th> -->
+						<th>Action</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -56,15 +56,15 @@
                                 <?php endif; ?>
                             </td>
 							<td align="center">
-								 <!-- <button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
+								 <button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
 				                  		Action
 				                    <span class="sr-only">Toggle Dropdown</span>
-				                  </button> -->
-				                  <!-- <div class="dropdown-menu" role="menu">
+				                  </button>
+				                  <div class="dropdown-menu" role="menu">
 				                    <a class="dropdown-item" href="?page=clients/manage_client&id=<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
 				                    <div class="dropdown-divider"></div>
 				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
-				                  </div> -->
+				                  </div>
 							</td>
 						</tr>
 					<?php endwhile; ?>

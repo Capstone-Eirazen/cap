@@ -22,7 +22,7 @@
                         <th class="text-center">Facility</th>
                         <th class="text-center">Client</th>
                         <th class="text-center">Status</th>
-                        <!-- <th class="text-center">Action</th> -->
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -59,9 +59,9 @@
                                 ?>
                             </td>
                             </td>
-                            <!-- <td class="text-center">
+                            <td class="text-center">
                                 <a class="btn btn-flat btn-sm btn-default border view_data" href="javascript:void(0)" data-id="<?= $row['id'] ?>"><i class="fa fa-eye"></i> View</a>
-                            </td> -->
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>

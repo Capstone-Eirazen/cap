@@ -5,7 +5,7 @@
 <?php endif;?>
 <div class="card card-outline card-primary">
 	<div class="card-header">
-		<h3 class="card-title">List of Facilities</h3>
+		<h3 class="card-title">List of Events</h3>
 		<div class="card-tools">
 			<a href="?page=facilities/manage_facility" class="btn btn-flat btn-primary"><span class="fas fa-plus"></span>  Create New</a>
 		</div>
@@ -63,10 +63,10 @@
 				                  </button>
 				                  <div class="dropdown-menu" role="menu">
                                     <a class="dropdown-item" href="?page=facilities/view_facility&id=<?php echo $row['id'] ?>"><span class="fa fa-eye text-dark"></span> View</a>
-				                    <!-- <div class="dropdown-divider"></div>
+				                    <div class="dropdown-divider"></div>
 				                    <a class="dropdown-item" href="?page=facilities/manage_facility&id=<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
 				                    <div class="dropdown-divider"></div>
-				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a> -->
+				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
 				                  </div>
 							</td>
 						</tr>

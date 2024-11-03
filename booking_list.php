@@ -23,7 +23,7 @@
                             <th class="text-center">Facility</th>
                             <th class="text-center">Schedule</th>
                             <th class="text-center">Status</th>
-                            <!-- <th class="text-center">Actions</th> -->
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,9 +67,9 @@
                                     }
                                 ?>
                             </td>
-                            <!-- <td class="text-center">
+                            <td class="text-center">
                                 <button type="button" class="btn btn-flat btn-light border btn-sm view_data" data-id="<?= $row['id'] ?>">View</button>
-                            </td> -->
+                            </td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
