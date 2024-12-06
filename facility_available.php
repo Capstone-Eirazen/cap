@@ -19,7 +19,7 @@
  <header class="bg-dark py-5" id="main-header">
     <div class="container h-100 d-flex align-items-center justify-content-center w-100">
         <div class="text-center text-white w-100">
-            <h1 class="display-4 fw-bolder">Available Facilities</h1>
+            <h1 class="display-4 fw-bolder">Recently Events</h1>
             <!-- <p class="lead fw-normal text-white-50 mb-0">We will take care of your vehicle</p> -->
         </div>
     </div>

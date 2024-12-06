@@ -18,40 +18,66 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 ?>
 <style>
     #uni_modal .modal-footer{
-        display:none
+        display:none;
     }
 </style>
 <div class="container-fluid">
-<fieldset class="border-bottom">
-        <legend class="h5 text-muted"> Facility Details</legend>
+    <fieldset class="border-bottom">
+        <legend class="h5 text-muted">Facility Details</legend>
         <dl>
-            <dt class="">Facility Code</dt>
+            <dt>Facility Code</dt>
             <dd class="pl-4"><?= isset($facility_code) ? $facility_code : "" ?></dd>
-            <dt class="">Name</dt>
+            <dt>Name</dt>
             <dd class="pl-4"><?= isset($name) ? $name : "" ?></dd>
-            <dt class="">Category</dt>
+            <dt>Category</dt>
             <dd class="pl-4"><?= isset($category) ? $category : "" ?></dd>
         </dl>
     </fieldset>
+
     <div class="clear-fix my-2"></div>
+
     <fieldset class="bor">
-        <legend class="h5 text-muted"> Booking Details</legend>
+        <legend class="h5 text-muted">Booking Details</legend>
         <dl>
-            <dt class="">Ref. Code</dt>
+            <dt>Ref. Code</dt>
             <dd class="pl-4"><?= isset($ref_code) ? $ref_code : "" ?></dd>
-            <dt class="">Schedule</dt>
+
+            <dt>Schedule</dt>
             <dd class="pl-4">
-             <?php 
+                <?php 
+                    // Format date_from and date_to
+                    $formatted_date_from = date("M d, Y", strtotime($date_from));
+                    $formatted_date_to = date("M d, Y", strtotime($date_to));
+                    
+                    // Show schedule range if date_from and date_to are different
                     if($date_from == $date_to){
-                        echo date("M d, Y", strtotime($date_from));
-                    }else{
-                        echo date("M d, Y", strtotime($date_from))." - ".date("M d, Y", strtotime($date_to));
+                        echo $formatted_date_from;
+                    } else {
+                        echo $formatted_date_from . " - " . $formatted_date_to;
                     }
                 ?>
             </dd>
-            <dt class="">Status</dt>
+
+            <dt>Time</dt>
             <dd class="pl-4">
                 <?php 
+                    // Format time_from and time_to
+                    $formatted_time_from = date("h:i A", strtotime($time_from));
+                    $formatted_time_to = date("h:i A", strtotime($time_to));
+
+                    // Show time range if both times are available
+                    if(!empty($time_from) && !empty($time_to)){
+                        echo $formatted_time_from . " - " . $formatted_time_to;
+                    } else {
+                        echo "Time not available";
+                    }
+                ?>
+            </dd>
+
+            <dt>Status</dt>
+            <dd class="pl-4">
+                <?php 
+                    // Display status badge based on status code
                     switch($status){
                         case 0:
                             echo "<span class='badge badge-secondary bg-gradient-secondary px-3 rounded-pill'>Pending</span>";
@@ -70,21 +96,23 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
             </dd>
         </dl>
     </fieldset>
-        
+
     <div class="clear-fix my-3"></div>
+
     <div class="text-right">
         <?php if(isset($status) && $status == 0 ): ?>
-        <button class="btn btn-default btn-flat bg-gradient-primary update_booking" type="button" data-status='1'>Confirm Book</button>
+            <button class="btn btn-default btn-flat bg-gradient-primary update_booking" type="button" data-status='1'>Confirm Book</button>
         <?php endif; ?>
         <?php if(isset($status) && $status == 1 ): ?>
-        <button class="btn btn-default btn-flat bg-gradient-success update_booking" type="button" data-status='2'>Mark as Done</button>
+            <button class="btn btn-default btn-flat bg-gradient-success update_booking" type="button" data-status='2'>Mark as Done</button>
         <?php endif; ?>
         <?php if(isset($status) && in_array($status, [0,1])): ?>
-        <button class="btn btn-danger btn-flat bg-gradient-danger update_booking" type="button" data-status='3'>Cancel Book</button>
+            <button class="btn btn-danger btn-flat bg-gradient-danger update_booking" type="button" data-status='3'>Cancel Book</button>
         <?php endif; ?>
         <button class="btn btn-dark btn-flat bg-gradient-dark" type="button" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
     </div>
 </div>
+
 <script>
     $(function(){
         $('.update_booking').click(function(){
@@ -98,26 +126,28 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
             _conf("Are you sure to "+action+" this facility booking [Ref. Code: <b><?= isset($ref_code) ? $ref_code : "" ?></b>]?", "update_booking",["<?= isset($id) ? $id : "" ?>",status])
         })
     })
-    function update_booking($id,$status){
+
+    function update_booking($id, $status){
         start_loader();
-		$.ajax({
-			url:_base_url_+"classes/Master.php?f=update_booking_status",
-			method:"POST",
-			data:{id: $id,status:$status},
-			dataType:"json",
-			error:err=>{
-				console.log(err)
-				alert_toast("An error occured.",'error');
-				end_loader();
-			},
-			success:function(resp){
-				if(typeof resp== 'object' && resp.status == 'success'){
-					location.reload();
-				}else{
-					alert_toast("An error occured.",'error');
-					end_loader();
-				}
-			}
-		})
+        $.ajax({
+            url:_base_url_+"classes/Master.php?f=update_booking_status",
+            method:"POST",
+            data:{id: $id,status:$status},
+            dataType:"json",
+            error: err => {
+                console.log(err);
+                alert_toast("An error occurred.", 'error');
+                end_loader();
+            },
+            success:function(resp){
+                if(typeof resp == 'object' && resp.status == 'success'){
+                    location.reload();
+                } else {
+                    alert_toast("An error occurred.", 'error');
+                    end_loader();
+                }
+            }
+        });
     }
 </script>
+    

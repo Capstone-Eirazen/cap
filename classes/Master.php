@@ -187,110 +187,173 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 
 	}
-	function save_booking(){
-		if(empty($_POST['id'])){
-			$prefix = date('Ym-');
-			$code = sprintf("%'.05d",1);
-			while(true){
-				$check = $this->conn->query("SELECT * FROM `booking_list` where ref_code = '{$prefix}{$code}'")->num_rows;
-				if($check > 0){
-					$code = sprintf("%'.05d",ceil($code) + 1);
-				}else{
-					break;
-				}
-			}
-			$_POST['client_id'] = $this->settings->userdata('id');
-			$_POST['ref_code'] = $prefix.$code;
-		}
-		extract($_POST);
-		$data = "";
-		foreach($_POST as $k =>$v){
-			if(!in_array($k,array('id'))){
-				if(!empty($data)) $data .=",";
-				$data .= " `{$k}`='{$v}' ";
-			}
+	function save_booking() {
+        if (empty($_POST['id'])) {
+            $prefix = date('Ym-');
+            $code = sprintf("%'.05d", 1);
+            while (true) {
+                $check = $this->conn->query("SELECT * FROM `booking_list` WHERE ref_code = '{$prefix}{$code}'")->num_rows;
+                if ($check > 0) {
+                    $code = sprintf("%'.05d", ceil($code) + 1);
+                } else {
+                    break;
+                }
+            }
+            $_POST['client_id'] = $this->settings->userdata('id');
+            $_POST['ref_code'] = $prefix . $code;
+        }
+        extract($_POST);
+
+        // Building data string for SQL query
+        $data = "";
+        foreach ($_POST as $k => $v) {
+            if (!in_array($k, array('id'))) {
+                if (!empty($data)) $data .= ",";
+                $data .= " `{$k}`='{$v}' ";
+            }
+        }
+
+        // Check for conflicts with other bookings on the same facility, date, and time
+        $check_sql = "
+            SELECT * FROM `booking_list`
+            WHERE facility_id = '{$facility_id}'
+              AND (
+                (
+                    '{$date_from}' BETWEEN date(date_from) AND date(date_to) 
+                    OR '{$date_to}' BETWEEN date(date_from) AND date(date_to)
+                ) AND (
+                    '{$time_from}' BETWEEN time(time_from) AND time(time_to)
+                    OR '{$time_to}' BETWEEN time(time_from) AND time(time_to)
+                )
+              )
+              AND status = 1
+        ";
+        $check = $this->conn->query($check_sql)->num_rows;
+        
+        if ($check > 0) {
+            $resp['status'] = 'failed';
+            $resp['msg'] = 'Facility is not available on the selected dates and times.';
+            return json_encode($resp);
+            exit;
+        }
+
+        // Insert or Update booking in the database
+        if (empty($id)) {
+            $sql = "INSERT INTO `booking_list` SET {$data} ";
+            $save = $this->conn->query($sql);
+        } else {
+            $sql = "UPDATE `booking_list` SET {$data} WHERE id = '{$id}' ";
+            $save = $this->conn->query($sql);
+        }
+
+        // Response based on the success of the query
+        if ($save) {
+            $resp['status'] = 'success';
+            if (empty($id))
+                $this->settings->set_flashdata('success', "Facility has been booked successfully.");
+            else
+                $this->settings->set_flashdata('success', "Booking successfully updated.");
+        } else {
+            $resp['status'] = 'failed';
+            $resp['err'] = $this->conn->error . "[{$sql}]";
+        }
+        return json_encode($resp);
+    }
+
+    // Other functions remain unchanged
+    function delete_booking() {
+        extract($_POST);
+        $del = $this->conn->query("DELETE FROM `booking_list` WHERE id = '{$id}'");
+        if ($del) {
+            $resp['status'] = 'success';
+            $this->settings->set_flashdata('success', "Booking successfully deleted.");
+        } else {
+            $resp['status'] = 'failed';
+            $resp['error'] = $this->conn->error;
+        }
+        return json_encode($resp);
+    }
+
+    function update_booking_status() {
+        extract($_POST);
+        $update = $this->conn->query("UPDATE `booking_list` SET `status` = '{$status}' WHERE id = '{$id}' ");
+        if ($update) {
+            $resp['status'] = 'success';
+            $this->settings->set_flashdata('success', "Booking status successfully updated.");
+        } else {
+            $resp['status'] = 'failed';
+            $resp['error'] = $this->conn->error;
+        }
+        return json_encode($resp);
+    }
+
+	// In Master.php
+
+	function save_rate() {
+		// Sanitize the inputs
+		if (empty($_POST['activity_class']) || empty($_POST['rate_per_hour'])) {
+			return json_encode(['status' => 'failed', 'msg' => 'Missing required fields.']);
 		}
 		
-		$check = $this->conn->query("SELECT * FROM `booking_list` where  facility_id = '{$facility_id}' and ('{$date_from}' BETWEEN date(date_from) and date(date_to) or '{$date_to}' BETWEEN date(date_from) and date(date_to)) and status = 1 ")->num_rows;
-		if($check > 0){
-			$resp['status'] = 'failed';
-			$resp['msg'] = 'Facility is not available on the selected dates.';
+		extract($_POST);
+		$activity_class = $this->conn->real_escape_string($activity_class);
+		$rate_per_hour = $this->conn->real_escape_string($rate_per_hour);
+
+		// Check if the rate already exists (this is optional, depending on your use case)
+		$check = $this->conn->query("SELECT * FROM `rates` WHERE `activity_class` = '{$activity_class}'")->num_rows;
+		if ($check > 0) {
+			return json_encode(['status' => 'failed', 'msg' => 'Rate for this activity class already exists.']);
+		}
+
+		// Prepare the SQL query to insert a new rate into the `rates` table
+		$sql = "INSERT INTO `rates` (`activity_class`, `rate_per_hour`) VALUES ('{$activity_class}', '{$rate_per_hour}')";
+		$save = $this->conn->query($sql);
+
+		if ($save) {
+			$resp['status'] = 'success';
+			$resp['msg'] = "Rate added successfully.";
 			return json_encode($resp);
-			exit;
+		} else {
+			$resp['status'] = 'failed';
+			$resp['msg'] = "Failed to add rate. Error: " . $this->conn->error;
+			return json_encode($resp);
 		}
+	}
 
-		if(empty($id)){
-			$sql = "INSERT INTO `booking_list` set {$data} ";
-			$save = $this->conn->query($sql);
-		}else{
-			$sql = "UPDATE `booking_list` set {$data} where id = '{$id}' ";
-			$save = $this->conn->query($sql);
-		}
-		if($save){
-			$resp['status'] = 'success';
-			if(empty($id))
-				$this->settings->set_flashdata('success'," Facility has been booked successfully.");
-			else
-				$this->settings->set_flashdata('success'," Booking successfully updated.");
-		}else{
-			$resp['status'] = 'failed';
-			$resp['err'] = $this->conn->error."[{$sql}]";
-		}
-		return json_encode($resp);
-	}
-	function delete_booking(){
-		extract($_POST);
-		$del = $this->conn->query("DELETE FROM `booking_list` where id = '{$id}'");
-		if($del){
-			$resp['status'] = 'success';
-			$this->settings->set_flashdata('success'," Booking successfully deleted.");
-		}else{
-			$resp['status'] = 'failed';
-			$resp['error'] = $this->conn->error;
-		}
-		return json_encode($resp);
-
-	}
-	function update_booking_status(){
-		extract($_POST);
-		$update = $this->conn->query("UPDATE `booking_list` set `status` = '{$status}' where id = '{$id}' ");
-		if($update){
-			$resp['status'] = 'success';
-			$this->settings->set_flashdata('success'," Booking status successfully updated.");
-		}else{
-			$resp['status'] = 'failed';
-			$resp['error'] = $this->conn->error;
-		}
-		return json_encode($resp);
-	}
+	
 }
 
+// Instantiate the Master class and route the actions
 $Master = new Master();
 $action = !isset($_GET['f']) ? 'none' : strtolower($_GET['f']);
 $sysset = new SystemSettings();
 switch ($action) {
-	case 'save_category':
-		echo $Master->save_category();
-	break;
-	case 'delete_category':
-		echo $Master->delete_category();
-	break;
-	case 'save_facility':
-		echo $Master->save_facility();
-	break;
-	case 'delete_facility':
-		echo $Master->delete_facility();
-	break;
-	case 'save_booking':
-		echo $Master->save_booking();
-	break;
-	case 'delete_booking':
-		echo $Master->delete_booking();
-	break;
-	case 'update_booking_status':
-		echo $Master->update_booking_status();
-	break;
-	default:
-		// echo $sysset->index();
+    case 'save_category':
+        echo $Master->save_category();
+        break;
+    case 'delete_category':
+        echo $Master->delete_category();
+        break;
+    case 'save_facility':
+        echo $Master->save_facility();
+        break;
+    case 'delete_facility':
+        echo $Master->delete_facility();
+        break;
+    case 'save_booking':
+        echo $Master->save_booking();
+        break;
+    case 'delete_booking':
+        echo $Master->delete_booking();
+        break;
+    case 'update_booking_status':
+        echo $Master->update_booking_status();
+        break;
+	case 'save_rate':
+		echo $Master->save_rate(); // Call the save_rate function
 		break;
+    default:
+        // echo $sysset->index();
+        break;
 }
+?>
