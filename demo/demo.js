@@ -1,4 +1,4 @@
-var defaultTheme = getRandom(4);
+var defaultTheme = 0;
 
 var today = new Date();
 
@@ -51,6 +51,18 @@ function getRandom(a) {
     return Math.floor(Math.random() * a);
 }
 
+const getBookingsData = async () => {
+  const fetchDataParams = {};
+  fetchDataParams.endpoint = "classes/Master.php?f=getBookings";
+  fetchDataParams.method = "GET";
+  const [error, data] = await fetchData(fetchDataParams);
+  if (error) {
+    console.error("Error fetching bookings data:", error); // for debug
+    return error;
+  }
+  return data;
+}
+
 function getWeeksInMonth(a, b) {
     var c = [], d = new Date(b, a, 1), e = new Date(b, a + 1, 0), f = e.getDate();
     var g = 1;
@@ -69,18 +81,51 @@ function getWeeksInMonth(a, b) {
 
 week_date = getWeeksInMonth(today.getMonth(), today.getFullYear())[2];
 
-$(document).ready(function() {
+const dateFormatterForCalendar = (dateString) => {
+  const date = new Date(dateString);
+  const month = date.toLocaleString('default', { month: 'long' });
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  return `${month}/${day}/${year}`;
+}
+
+const dateIncrementor = (dateString, dateToAdd) => {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + dateToAdd);
+  const newDateString = date.toISOString().split('T')[0];
+  return newDateString;
+}
+
+const getBookingsDataFormatter = (data = []) => {
+  const returnData = [];
+  const types = ['event', 'holiday', 'birthday'];
+  data.forEach((ele)=>{
+    const duration = Number(ele.date_duration);
+    let uniqueIncrementor = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+    const selectedType = types[getRandom(3)];
+    for (let i = 0; i <= duration; i++) {
+      const uniqueId = `${ele.id}-${uniqueIncrementor.length % i+1}`;
+      const event = {};
+      event.id = uniqueId;
+      event.name = ele.name;
+      event.description = ele.description;
+      event.date = dateFormatterForCalendar(dateIncrementor(ele.date_from, i+1));
+      event.type = selectedType;
+      event.everyYear = !1;
+      returnData.push(event);
+    }
+  });
+  return returnData;
+}
+
+$(document).ready(async function() {
+    const bookingData = await getBookingsData();
+    const formattedData = getBookingsDataFormatter(bookingData);
     $("#demoEvoCalendar").evoCalendar({
         format: "MM dd, yyyy",
         titleFormat: "MM",
-        calendarEvents: [{
-            id: "d8jai7s",
-            name: "Author's Birthday",
-            description: "Author's note: Thank you for using EvoCalendar! :)",
-            date: "February/15/1999",
-            type: "birthday",
-            everyYear: !0
-        },]
+        calendarEvents: formattedData
       });
         // {
         //     id: "in8bha4",
