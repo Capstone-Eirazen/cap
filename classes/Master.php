@@ -320,40 +320,47 @@ Class Master extends DBConnection {
 		}
 	}
 
-	
+	public function getBookings(){
+		$sql = "SELECT BL.id, FL.name, BL.date_from, BL.status, BL.date_to, DATEDIFF(BL.date_to, BL.date_from) AS date_duration, CONCAT('Booked by: ', CL.firstname, ' ', CL.lastname) as description FROM booking_list as BL INNER JOIN facility_list as FL on BL.facility_id = FL.id LEFT JOIN client_list as CL ON BL.client_id = CL.id";
+		$result = $this->conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+		// $this->logData($result);
+		return json_encode($result);
+	}
+	private function logData($data) {
+		$logFile = __DIR__.'/../logs/debug.log';
+
+		// Check if the log directory exists, create it if not
+		if (!is_dir(dirname($logFile))) {
+			mkdir(dirname($logFile), 0777, true);
+		}
+
+		// Check if the log file exists, create it if not
+		if (!file_exists($logFile)) {
+			touch($logFile);
+		}
+
+		// Log data with a timestamp
+		$logEntry = date('Y-m-d H:i:s') . ' - ' . (is_array($data) || is_object($data) ? json_encode($data) : $data) . PHP_EOL;
+
+		// Try appending to the log file and check if it fails
+		if (file_put_contents($logFile, $logEntry, FILE_APPEND) === false) {
+			// If it fails, log a failure message
+			error_log("Failed to write to the log file.");
+		}
+	}
+
 }
 
 // Instantiate the Master class and route the actions
 $Master = new Master();
-$action = !isset($_GET['f']) ? 'none' : strtolower($_GET['f']);
+$action = !isset($_GET['f']) ? 'index' : strtolower($_GET['f']);
 $sysset = new SystemSettings();
-switch ($action) {
-    case 'save_category':
-        echo $Master->save_category();
-        break;
-    case 'delete_category':
-        echo $Master->delete_category();
-        break;
-    case 'save_facility':
-        echo $Master->save_facility();
-        break;
-    case 'delete_facility':
-        echo $Master->delete_facility();
-        break;
-    case 'save_booking':
-        echo $Master->save_booking();
-        break;
-    case 'delete_booking':
-        echo $Master->delete_booking();
-        break;
-    case 'update_booking_status':
-        echo $Master->update_booking_status();
-        break;
-	case 'save_rate':
-		echo $Master->save_rate(); // Call the save_rate function
-		break;
-    default:
-        // echo $sysset->index();
-        break;
+
+// avoid calling $Master->$action as long as the same $action and function
+if (method_exists($Master, $action)){
+	echo $Master->$action();
+} else {
+	echo json_encode(['status' => 'failed','msg' => 'Invalid action.']);
 }
+exit;
 ?>
