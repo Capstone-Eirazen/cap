@@ -362,5 +362,4 @@ if (method_exists($Master, $action)){
 } else {
 	echo json_encode(['status' => 'failed','msg' => 'Invalid action.']);
 }
-exit;
 ?>
